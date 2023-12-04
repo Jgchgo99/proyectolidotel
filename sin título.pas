@@ -1,7 +1,7 @@
 program Hotel_Lidotel;
 uses sysutils, crt;
 
-{Definir Estructura de Campos del Formato de Registro Archivo ClienteLidotel}
+{Definir Estructura de Campos del Formato de Registro Archivo ClienteLidotebbbbbl}
 type
    ClienteLidotelRecord = Record
       NacionCliente: char;
