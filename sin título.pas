@@ -1,7 +1,7 @@
 program Hotel_Lidotel;
 uses sysutils, crt;
 
-{Definir Estructura de Campos del Formato de Registro Archivo ClienteLidotebbbbbl}
+{Definir Estructura de Campos del Formato de Registro Archivo ClienteLidotel}
 type
    ClienteLidotelRecord = Record
       NacionCliente: char;
@@ -54,34 +54,29 @@ type
      NroHijos:integer;
    end;
   type
-    GrupoPersonasRecord= Record
+    ReservacionGrupoPersonasRecord= Record
      NacionCliente: char;
      CedulaCliente: integer;
      NroReservacion: integer;
-     TipoVinculo: string[15];
-     NombCliente: string [40];
-     ApellidoCliente: string [40];
-     DiaNacCliente:integer;
-     MesNacCliente: integer;
-     AnoNacCliente: integer;
-     EdadCliente: integer;
-     TlfCliente: string [11];
-     EmailCliente: string [40];
-     SexoCliente: char;
-     DirCliente: string [40];
+     TipoVinculo: integer;
+     NacionPersona: char;
+     CedulaPersona: integer;
+     NombPersona: string [40];
+     ApellidoPersona: string [40];
+     EdadPersona: integer;
+     TlfPersona: string [11];
+     SexoPersona: char;
+     TipoHabitacion: integer;
    end;
  type
    ReservacionHabitacionesRecord= Record
      NacionCliente: char;
      CedulaCliente: integer;
      NroReservacion: integer;
-     TipoHabitacion: string[15];
+     TipoHabitacion: integer;
      CantHabitacion: integer;
      PrecioHabitacion: real;
-     CanDiasReservacion: integer;
-     DiaReservacion: integer;
-     MesReservacion: integer;
-     AnoReservacion: integer;
+     TotalPagarHab: real;
    end;
  type
   ReservacionTotalPagarRecord= Record
@@ -111,30 +106,33 @@ var
    ReservacionGrupoFamiliar_Ext: String;                           {declaracion nombre archivo Externo programa}
 
 
-   RegGrupoPersonas: GrupoPersonasRecord;
-   GrupoPersonas_Int: file of GrupoPersonasRecord;     {declaracion nombre archivo interno programa}
-   GrupoPersonas_Ext: String;                           {declaracion nombre archivo Externo programa}
+   RegReservacionGrupoPersonas: ReservacionGrupoPersonasRecord;
+   ReservacionGrupoPersonas_Int: file of ReservacionGrupoPersonasRecord;     {declaracion nombre archivo interno programa}
+   ReservacionGrupoPersonas_Ext: String;                           {declaracion nombre archivo Externo programa}
 
 
    RegReservacionHabitaciones:  ReservacionHabitacionesRecord;
    ReservacionHabitaciones_Int: file of  ReservacionHabitacionesRecord;     {declaracion nombre archivo interno programa}
    ReservacionHabitaciones_Ext: String;                           {declaracion nombre archivo Externo programa}
 
-   RegReservacionTotalPagar:  ReservacionTotalPagarRecord;
+
    ReservacionTotalPagar_Int: file of   ReservacionTotalPagarRecord;     {declaracion nombre archivo interno programa}
    ReservacionTotalPagar_Ext: String;                           {declaracion nombre archivo Externo programa}
 
    PosPuntero,PosCursor : longint;
-   NacionCliente, SexoCliente: char;
-   CedulaCliente, DiaNacCliente,  MesNacCliente, AnoNacCliente, EdadCliente: integer;
+   NacionCliente, SexoCliente, SexoPersona, NacionPersona: char;
+   CedulaCliente, DiaNacCliente,  MesNacCliente, AnoNacCliente, EdadCliente, TipoHabitacion,CantHabitacion: integer;
    NombCliente, ApellidoCliente, PaisCliente, EmailCliente, DirCliente: string;
    DiaAfiliacion, MesAfiliacion, AnoAfiliacion: integer;
    TlfCliente: string;
-   NroReservacion, CanDiasReservacion, DiaReservacion, MesReservacion,  AnoReservacion: integer;
-   NroAdutos, NroHijos, CantHabitacion:integer;
-   TipoVinculo, TipoHabitacion: string;
-   TotalPagar, PrecioHabitacion: real;
+   NroReservacion, CanDiasReservacion, DiaReservacion, MesReservacion,  AnoReservacion,  EdadPersona: integer;
+   NroAdultos, NroHijos, TipoVinculo,  CedulaPersona:integer;
 
+   TotalPagarHab: real;
+   NombPersona,  ApellidoPersona,  TlfPersona: string;
+   PosRegReservacionIndividual,PosRegReservacionAcompanante,PosRegReservacionGrupoFamiliar: Integer ;
+   CanRegReservacionIndividual,CanRegReservacionAcompanante,CanRegReservacionGrupoFamiliar: Integer ;
+   CanReg,RegAct  :string;
 
  Procedure TituloLidotel;
   Begin
@@ -148,81 +146,6 @@ var
    textcolor(black);
   end;
 
-{Inicializar Variables Reservacion de Total a Pagar }
- Procedure InzVarReservacionTotalPagar;
-    begin
-      NacionCliente:=' ';
-      CedulaCliente:=0;
-      NroReservacion:=0;
-      TotalPagar:=0;
-   end;
-{Inicializar Variables  Reservacion de Habitaciones}
- Procedure InzVarReservacionHabitaciones;
-   begin
-     NacionCliente:=' ';
-     CedulaCliente:=0;
-     NroReservacion:=0;
-     TipoHabitacion:='';
-     CantHabitacion:=0;
-     PrecioHabitacion:=0;
-     CanDiasReservacion:=0;
-     DiaReservacion:=0;
-     MesReservacion:=0;
-     AnoReservacion:=0;
-   end;
-{Inicializar Variables Grupo de Personas}
- Procedure InzVarGrupoPersonas;
-   begin
-      NacionCliente:=' ';
-      CedulaCliente:=0;
-      NombCliente:='';
-      NroReservacion:=0;
-      TipoVinculo:='';
-      ApellidoCliente:='';
-      DiaNacCliente:=0;
-      MesNacCliente:=0;
-      AnoNacCliente:=0;
-      EdadCliente:=0;
-      TlfCliente:='';
-      EmailCliente:='';
-      SexoCliente:=' ';
-      DirCliente:='';
-   end;
-{Inicializar Variables Reservacion Grupo Familiar}
- Procedure InzVarReservacionGrupoFamiliar;
-   begin
-     NacionCliente:=' ';
-     CedulaCliente:=0;
-     NroReservacion:=0;
-     CanDiasReservacion:=0;
-     DiaReservacion:=0;
-     MesReservacion:=0;
-     AnoReservacion:=0;
-     NroAdutos:=0;
-     NroHijos:=0;
-   end;
-{Inicializar Variables Reservacion Acompanante}
- Procedure InzVarReservacionAcompanante;
-   begin
-     NacionCliente:=' ';
-     CedulaCliente:=0;
-     NroReservacion:=0;
-     CanDiasReservacion:=0;
-     DiaReservacion:=0;
-     MesReservacion:=0;
-     AnoReservacion:=0;
-   end;
- {Inicializar Variables Reservacion Individual}
- Procedure InzVarReservacionIndividual;
-   begin
-     NacionCliente:=' ';
-     CedulaCliente:=0;
-     NroReservacion:=0;
-     CanDiasReservacion:=0;
-     DiaReservacion:=0;
-     MesReservacion:=0;
-     AnoReservacion:=0;
-   end;
 
 {Inicializar Variables}
 Procedure InzVarCliente;
@@ -268,7 +191,7 @@ Procedure CargarDatosCliente;
  Procedure VerDatosCliente;
    begin
         TituloLidotel;
-        writeln(' DATOS DEL CLIENTE');
+        writeln(' DATOS DEL CLIENTE:');
         writeln;
         writeln('     Nacionalidad (V,E): ', NacionCliente);
         writeln('     Cedula............: ', CedulaCliente);
@@ -328,7 +251,7 @@ Procedure PrepararAmbiente;
       Close(ReservacionAcompanante_Int);
     end;
 
- {Archivo Reservacion Grupo Familiar}
+ {Archivo Reservacion Grupo/Familiar}
    ReservacionGrupoFamiliar_Ext:='ReservacionGrupoFamiliar.Dat';
    Assign(ReservacionGrupoFamiliar_Int,ReservacionGrupoFamiliar_Ext);
    {Verifico si el archivo no existe para crearlo}
@@ -341,15 +264,15 @@ Procedure PrepararAmbiente;
     end;
 
  {Archivo Grupo de Personas}
-   GrupoPersonas_Ext:='GrupoPersonas.Dat';
-   Assign(GrupoPersonas_Int,GrupoPersonas_Ext);
+   ReservacionGrupoPersonas_Ext:='ReservacionGrupoPersonas.Dat';
+   Assign(ReservacionGrupoPersonas_Int,ReservacionGrupoPersonas_Ext);
    {Verifico si el archivo no existe para crearlo}
-   if fileexists(GrupoPersonas_Ext)=False then
+   if fileexists(ReservacionGrupoPersonas_Ext)=False then
     Begin
       {Crear el Archivo}
-      Rewrite(GrupoPersonas_Int);
+      Rewrite(ReservacionGrupoPersonas_Int);
       {Cierro Archivo}
-      Close(GrupoPersonas_Int);
+      Close(ReservacionGrupoPersonas_Int);
     end;
 
  {Archivo Reservacion de Habitaciones}
@@ -411,13 +334,13 @@ Procedure ConsultarCliente;
     begin
       dato:='';
         TituloLidotel;
-        writeln(' CONSULTAR CLIENTE');
+        writeln(' CONSULTAR CLIENTE:');
         writeln;
         writeln;
   {Validar Nacionalidad}
     repeat
       TituloLidotel;
-      writeln(' CONSULTAR CLIENTE');
+      writeln(' CONSULTAR CLIENTE:');
       writeln;
       write(' Nacionalidad (V,E): ');
       NacionCliente:=Upcase(Readkey);
@@ -426,7 +349,7 @@ Procedure ConsultarCliente;
     {Validar Cedula}
       repeat
       TituloLidotel;
-      writeln(' CONSULTAR CLIENTE');
+      writeln(' CONSULTAR CLIENTE:');
       writeln;
       writeln(' Nacionalidad (V,E): ', NacionCliente);
       write(' Cedula: ');
@@ -439,7 +362,7 @@ Procedure ConsultarCliente;
     If (PosCursor) >= 0 then  {Existe Registro }
      Begin
       TituloLidotel;
-      writeln(' CONSULTAR CLIENTE');
+      writeln(' CONSULTAR CLIENTE:');
       CargarDatosCliente;
       VerDatosCliente;
       writeln();
@@ -468,7 +391,7 @@ Procedure IncluirCliente;
   {Validar Nacionalidad}
      repeat
       TituloLidotel;
-      writeln(' INCLUIR CLIENTE');
+      writeln(' INCLUIR CLIENTE:');
       writeln;
       write(' Nacionalidad (V,E)....: ');
       NacionCliente:=Upcase(Readkey);
@@ -477,7 +400,7 @@ Procedure IncluirCliente;
   {Validar Cedula}
      repeat
       TituloLidotel;
-      writeln(' INCLUIR CLIENTE');
+      writeln(' INCLUIR CLIENTE:');
       writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
          write  (' Cedula...........: ');
@@ -491,7 +414,7 @@ Procedure IncluirCliente;
    {Validar Nombre}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -501,7 +424,7 @@ Procedure IncluirCliente;
    {Validar Apellido}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -512,7 +435,7 @@ Procedure IncluirCliente;
   {Validar  Dia de Nacimiento }
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -525,7 +448,7 @@ Procedure IncluirCliente;
   {Validar Mes de Nacimiento}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -539,7 +462,7 @@ Procedure IncluirCliente;
   {Validar Ano de Nacimiento}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -554,7 +477,7 @@ Procedure IncluirCliente;
   {Validar Pais}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -569,7 +492,7 @@ Procedure IncluirCliente;
   {Validar Edad}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -586,7 +509,7 @@ Procedure IncluirCliente;
   {Validar Telefono Celular}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -604,7 +527,7 @@ Procedure IncluirCliente;
   {Validar Email}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -622,7 +545,7 @@ Procedure IncluirCliente;
   {Validar Sexo}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -641,7 +564,7 @@ Procedure IncluirCliente;
   {Validar Direccion}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -661,7 +584,7 @@ Procedure IncluirCliente;
   {Validar Dia de Afiliacion}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -683,7 +606,7 @@ Procedure IncluirCliente;
   {Validar Mes de Afiliacion}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -706,7 +629,7 @@ Procedure IncluirCliente;
   {Validar Ano de Afiliacion}
       repeat
         TituloLidotel;
-        writeln(' INCLUIR CLIENTE');
+        writeln(' INCLUIR CLIENTE:');
         writeln;
         writeln(' Nacionalidad (V,E): ', NacionCliente);
         writeln(' Cedula............: ', CedulaCliente);
@@ -729,7 +652,7 @@ Procedure IncluirCliente;
      until (AnoAfiliacion>1900);
       Repeat
       TituloLidotel;
-      writeln(' INCLUIR CLIENTE');
+      writeln(' INCLUIR CLIENTE:');
       writeln;
       writeln(' Nacionalidad (V,E): ', NacionCliente);
       writeln(' Cedula............: ', CedulaCliente);
@@ -746,7 +669,7 @@ Procedure IncluirCliente;
       writeln(' Direccion.........: ', DirCliente);
       writeln(' Dia de Afiliacion.: ', DiaAfiliacion);
       writeln(' Mes de Afiliacion.: ', MesAfiliacion);
-      writeln  (' Ano de Afilicacion: ', AnoAfiliacion);
+      write  (' Ano de Afilicacion: ', AnoAfiliacion);
       writeln;writeln;
       write('                       Desea guardar los datos(S=si o N=no): ');
       opc:=Upcase(readkey);
@@ -780,7 +703,6 @@ Procedure IncluirCliente;
           write('                       Datos Guardado Satisfactoriamete...');
           delay(2000);
        end;
-
      end
          Else
      Begin
@@ -788,7 +710,6 @@ Procedure IncluirCliente;
        writeln('                      Cliente Existe...Pulse una tecla para continuar' );
        readkey();
      end;
-
   end;
 
 Procedure ModificarCliente;
@@ -797,14 +718,12 @@ Procedure ModificarCliente;
     opc: string;
     opc1: char;
     datonum,opcnum: integer;
-
   begin
   dato:=''; opc:='';
-
   {Validar Nacionalidad}
     repeat
       TituloLidotel;
-      writeln(' MODIFICAR CLIENTE');
+      writeln(' MODIFICAR CLIENTE:');
       writeln;
       write (' Nacionalidad (V,E): ');
       NacionCliente:=Upcase(Readkey);
@@ -813,15 +732,14 @@ Procedure ModificarCliente;
     {Validar Cedula}
       repeat
       TituloLidotel;
-      writeln(' MODIFICAR CLIENTE');
+      writeln(' MODIFICAR CLIENTE:');
       writeln;
       writeln(' Nacionalidad (V,E): ', NacionCliente);
       write  (' Cedula...........: ');
       readln(dato);
       val(dato,CedulaCliente);
       until (CedulaCliente<>0);
-
-     {Validar que la cedula exista para modificar}
+  {Validar que la cedula exista para modificar}
       PosCursor:=BuscarCliente(NacionCliente,CedulaCliente);
     If (PosCursor) >= 0 then  {Existe Registro }
      Begin
@@ -830,7 +748,7 @@ Procedure ModificarCliente;
       Begin
        Repeat
         TituloLidotel;
-        writeln(' MODIFICAR CLIENTE');
+        writeln(' MODIFICAR CLIENTE:');
         writeln;
         VerDatosCliente;
         writeln(' 99. Salir y Guardar...: ');
@@ -840,7 +758,6 @@ Procedure ModificarCliente;
        val(opc,opcnum);
        until opcnum in [1,2,3,4,5,6,7,8,9,10,11,12,13,14,99];
        {campo a modificar}
-
        Case Opcnum of
         01:   {modificar campo nombre}
            Begin;
@@ -1012,7 +929,7 @@ Procedure EliminarCliente;
   {Validar Nacionalidad}
     repeat
       TituloLidotel;
-      writeln(' ELIMINAR CLIENTE');
+      writeln(' ELIMINAR CLIENTE:');
       writeln;
       write(' Nacionalidad (V,E): ');
       NacionCliente:=Upcase(Readkey);
@@ -1021,7 +938,7 @@ Procedure EliminarCliente;
     {Validar Cedula}
       repeat
       TituloLidotel;
-      writeln(' ELIMINAR CLIENTE');
+      writeln(' ELIMINAR CLIENTE:');
       writeln;
       writeln(' Nacionalidad (V,E): ', NacionCliente);
       write  (' Cedula............: ');
@@ -1035,7 +952,7 @@ Procedure EliminarCliente;
       CargarDatosCliente;
       Repeat
       TituloLidotel;
-      writeln(' ELIMINAR CLIENTE');
+      writeln(' ELIMINAR CLIENTE:');
       writeln;
       VerDatosCliente;
       writeln;writeln;
@@ -1087,89 +1004,1355 @@ Procedure EliminarCliente;
      end;
    end;
 
- Procedure ReservacionIndividual;
+Function PrecTipoHabitacion(TipoHabitacion: integer): real;
+   begin
+    case TipoHabitacion of
+    1: PrecTipoHabitacion:= 60;
+    2: PrecTipoHabitacion:= 120;
+    3: PrecTipoHabitacion:= 200;
+    4: PrecTipoHabitacion:= 300;
+    end;
+   end;
+
+Function DescTipoHabitacion(TipoHabitacion: integer): string;
+   begin
+    case TipoHabitacion of
+    1: DescTipoHabitacion:= 'SENCILLA';
+    2: DescTipoHabitacion:= 'DOBLE';
+    3: DescTipoHabitacion:= 'FAMILY ROOM';
+    4: DescTipoHabitacion:= 'SUITE';
+    end;
+   end;
+
+Procedure TipoHabitaciones;
+   begin
+    Writeln('');
+    Writeln(' TIPOS DE HABITACIONES');
+    Writeln('');
+    Writeln(' 1. SENCILLA       60$ por noche');
+    Writeln(' 2. DOBLE         120$ por noche');
+    Writeln(' 3. FAMILY ROOM   200$ por noche');
+    Writeln(' 4. SUITE         300$ por noche');
+    Writeln(' 9. Descripcion de Habitaciones');
+    Writeln('');
+   end;
+
+Procedure DescHabitaciones;
+   begin
+    writeln();
+    TituloLidotel;
+    Writeln('1. SENCILLA â€“ 60$ por noche');
+    writeln('    Amplia y confortable habitaciÃ³n decorada con un estilo vanguardista, cama');
+    writeln('    Lidotel Royal King con sÃ¡banas de algodÃ³n egipcio, soporte para iPod con reloj');
+    writeln('    despertador, TV 32â€ HD Plasma con cable, baÃ±o con ducha, cafetera elÃ©ctrica, nevera');
+    writeln('    ejecutiva, caja electrÃ³nica de seguridad y secador de cabello.');
+    writeln();
+    Writeln('2. DOBLE â€“ 120$ por noche');
+    writeln('    Amplia y confortable habitaciÃ³n decorada con un estilo vanguardista, Dos Camas');
+    writeln('    Lidotel Full con sÃ¡banas de algodÃ³n egipcio, soporte para iPod con reloj despertador,');
+    writeln('    TV 32â€ HD Plasma con cable, baÃ±o con ducha, cafetera elÃ©ctrica, nevera ejecutiva,');
+    writeln('    caja electrÃ³nica de seguridad secador de cabello.');
+    writeln();
+    Writeln('3. FAMILY ROOM â€“ 200$ por noche');
+    writeln('   CÃ¡lida y confortable habitaciÃ³n decorada con un estilo vanguardista, 100% libre');
+    writeln('   de humo, cama Lidotel Royal King, con reloj despertador, TV 32â€ HD Plasma con');
+    writeln('   cable, baÃ±o con ducha, cafetera elÃ©ctrica, nevera ejecutiva, caja electrÃ³nica de');
+    writeln('   seguridad y secador de cabello, armario adicional amplio, una habitaciÃ³n separada');
+    writeln('   con 2 camas full, baÃ±o con ducha.');
+    writeln();
+    Writeln('4. SUITE â€“ 300$ por noche');
+    writeln('   CÃ¡lida y confortable habitaciÃ³n decorada con un estilo vanguardista, 100% libre');
+    writeln('   de humo, Cama Lidotel Royal King, con reloj despertador, TV 32â€ HD Plasma con');
+    writeln('   cable, 2 baÃ±os con ducha, cafetera elÃ©ctrica, nevera ejecutiva, caja electrÃ³nica de');
+    writeln('   seguridad y secador de cabello, armario adicional amplio y Ã¡rea separada con 2 sofÃ¡cama individuales');
+    writeln();
+    writeln('                        Pulse Una Tecla Para Continuar');
+    readkey();
+    writeln();
+    TituloLidotel;
+    Writeln(' INCLUYEN ');
+    writeln();
+    writeln('   Desayuno Buffet en el Restaurant Le Nouveau, acceso inalÃ¡mbrico a Internet');
+    writeln('  (WIFI), Business Center, uso de nuestra exclusiva piscina, acceso a nuestro');
+    writeln('  gimnasio, sillas y toldos en la playa, kit de vanidades y niÃ±os de 0 a 2 aÃ±os sin');
+    writeln('  recargos.');
+    writeln();
+    writeln();
+    writeln('                        Pulse Una Tecla Para Continuar');
+    readkey();
+   end;
+
+
+
+ Function DescTipoVinculo(TipoVinculo: integer):String;
+   begin
+     case TipoVinculo Of
+      1: DescTipoVinculo:= 'Esposo(a)';
+      2: DescTipoVinculo:= 'Amigo(a)';
+      3: DescTipoVinculo:= 'Hermano(a)';
+      4: DescTipoVinculo:= 'Abuelo(a)';
+      5: DescTipoVinculo:= 'Tio(a)';
+      6: DescTipoVinculo:= 'Madre';
+      7: DescTipoVinculo:= 'Padre';
+      8: DescTipoVinculo:= 'Hijo(a)';
+      9: DescTipoVinculo:= 'Primo(a)';
+     end;
+   end;
+
+ Procedure MenuTipoVinculo;
+   Begin
+    Writeln('');
+    Writeln(' TIPO DE VINCULO');
+    Writeln('');
+    Writeln(' 1. Esposo(a)');
+    Writeln(' 2. Amigo(a)');
+    Writeln(' 3. Hermano(a)');
+    Writeln(' 4. Abuelo(a)');
+    Writeln(' 5. Tio(a)');
+    Writeln(' 6. Madre');
+    Writeln(' 7. Padre');
+    Writeln(' 8. Hijo(a)');
+    Writeln(' 9. Primo(a)');
+    Writeln('');
+   end;
+
+
+  Procedure GrupoPersona(MostrarMenu: boolean; NumPersona: Integer;GrupoFamilia:Boolean);
    var
      dato: string;
+     datonum: real;
      begin
+        dato:='';
+        Datonum:=0;
+     Repeat
+      TituloLidotel;
+      writeln(' Reservacion Acompanante:');
+      writeln;
+      writeln(' Nacionalidad (V,E): ', NacionCliente);
+      writeln(' Cedula............: ', CedulaCliente);
+      writeln(' Nombre Cliente....: ', NombCliente);
+      writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+      writeln(' Numero Reservacion: ', NroReservacion);
+      if GrupoFamilia=True then
+       Begin
+         writeln(' Cantidad de Hijos.: ',NroHijos);
+         writeln(' Cantidad de Adulto: ',NroAdultos);
+       End;
+      writeln();
+      Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+
+      if (MostrarMenu=True) then
+       begin
+        MenuTipoVinculo;
+        write  (' Tipo de vinculo: ');
+        dato:=readkey();
+       end;
+
+      if (MostrarMenu=False) then
+       Begin
+          dato:='8';
+       end;
+
+      val(dato,TipoVinculo); {convertir dato string  a numerico}
+      until (TipoVinculo>=1) and (TipoVinculo<=9);
+      repeat
+      TituloLidotel;
+      writeln(' Reservacion Acompanante:');
+      writeln;
+      writeln(' Nacionalidad (V,E): ', NacionCliente);
+      writeln(' Cedula............: ', CedulaCliente);
+      writeln(' Nombre Cliente....: ', NombCliente);
+      writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+      writeln(' Numero Reservacion: ', NroReservacion);
+      writeln();
+      Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+      writeln();
+      writeln(' Tipo de Vinculo...: ', DescTipoVinculo(TipoVinculo));
+      write  (' Nacionalidad (V,E): ');
+      NacionPersona:=Upcase(Readkey);
+      until (NacionPersona='V') or (NacionPersona='E');
+      writeln();
+    {Validar Cedula}
+      repeat
+      TituloLidotel;
+      writeln(' Reservacion Acompanante:');
+      writeln;
+      writeln(' Nacionalidad (V,E): ', NacionCliente);
+      writeln(' Cedula............: ', CedulaCliente);
+      writeln(' Nombre Cliente....: ', NombCliente);
+      writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+      writeln(' Numero Reservacion: ', NroReservacion);
+      writeln();
+      Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+      writeln();
+      writeln(' Tipo de Vinculo...: ', DescTipoVinculo(TipoVinculo));
+      writeln(' Nacionalidad (V,E): ', NacionPersona);
+      write  (' Cedula............: ');
+      readln(dato);
+      val(dato,CedulaPersona);
+      until (CedulaPersona<>0);
+      Repeat
+        TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre Cliente....: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln();
+        Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+        writeln();
+        writeln(' Tipo de Vinculo...: ', DescTipoVinculo(TipoVinculo));
+        writeln(' Nacionalidad (V,E): ', NacionPersona);
+        writeln(' Cedula............: ', CedulaPersona);
+        write  (' Nombre............: ');
+        readln(NombPersona);
+      until (NombPersona<>'');
+      Repeat
+       TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre Cliente....: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln();
+        Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+        writeln();
+        writeln(' Tipo de Vinculo...: ', DescTipoVinculo(TipoVinculo));
+        writeln(' Nacionalidad (V,E): ', NacionPersona);
+        writeln(' Cedula............: ', CedulaPersona);
+        writeln(' Nombre............: ', NombPersona);
+        write  (' Apellido..........: ');
+        readln(ApellidoPersona);
+      until (ApellidoPersona<>'');
+      Repeat
+       TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre Cliente....: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln();
+        Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+        writeln();
+        writeln(' Tipo de Vinculo...: ', DescTipoVinculo(TipoVinculo));
+        writeln(' Nacionalidad (V,E): ', NacionPersona);
+        writeln(' Cedula............: ', CedulaPersona);
+        writeln(' Nombre............: ', NombPersona);
+        writeln(' Apellido..........: ', ApellidoPersona );
+        write  (' Edad..............: ');
+        readln(dato);
+        val(dato,EdadPersona); {convertir dato string  a numerico}
+      until (EdadPersona>=0);
+      Repeat
+       TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre Cliente....: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln();
+        Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+        writeln();
+        writeln(' Tipo de Vinculo...: ', DescTipoVinculo(TipoVinculo));
+        writeln(' Nacionalidad (V,E): ', NacionPersona);
+        writeln(' Cedula............: ', CedulaPersona);
+        writeln(' Nombre............: ', NombPersona);
+        writeln(' Apellido..........: ', ApellidoPersona );
+        writeln(' Edad..............: ', EdadPersona);
+        write  (' Telefono..........: ');
+        readln(TlfPersona);
+        val(TlfPersona,Datonum); {convertir dato string  a numerico}
+      until (Datonum>0);
+      Repeat
+       TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre Cliente....: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln();
+        Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+        writeln();
+        writeln(' Tipo de Vinculo...: ', DescTipoVinculo(TipoVinculo));
+        writeln(' Nacionalidad (V,E): ', NacionPersona);
+        writeln(' Cedula............: ', CedulaPersona);
+        writeln(' Nombre............: ', NombPersona);
+        writeln(' Apellido..........: ', ApellidoPersona );
+        writeln(' Edad..............: ', EdadPersona);
+        writeln(' Telefono..........: ', TlfPersona);
+        write  (' Sexo(M o F).......: ');
+        SexoPersona:=Upcase(Readkey);
+     until (SexoPersona='M') or (SexoPersona='F');
+      TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre Cliente....: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln();
+        Writeln(' DATOS DE LA PERSONA: ',NumPersona);
+        writeln();
+        writeln(' Tipo de Vinculo...: ', DescTipoVinculo(TipoVinculo));
+        writeln(' Nacionalidad (V,E): ', NacionPersona);
+        writeln(' Cedula............: ', CedulaPersona);
+        writeln(' Nombre............: ', NombPersona);
+        writeln(' Apellido..........: ', ApellidoPersona );
+        writeln(' Edad..............: ', EdadPersona);
+        writeln(' Telefono..........: ', TlfPersona);
+        write  (' Sexo(M o F).......: ', SexoPersona );
+ end;
+Procedure GrabarGrupoPersonas;
+    begin
+
+         Reset(ReservacionGrupoPersonas_Int);
+          {Posiciono Puntero al final del Archivo, para agregar registro}
+          seek(ReservacionGrupoPersonas_Int,filesize(ReservacionGrupoPersonas_Int));
+          RegReservacionGrupoPersonas.NacionCliente:= NacionCliente;
+          RegReservacionGrupoPersonas.CedulaCliente:= CedulaCliente;
+          RegReservacionGrupoPersonas.NroReservacion:= NroReservacion;
+          RegReservacionGrupoPersonas.TipoVinculo:= TipoVinculo;
+          RegReservacionGrupoPersonas.NacionPersona:= NacionPersona;
+          RegReservacionGrupoPersonas.CedulaPersona:= CedulaPersona;
+          RegReservacionGrupoPersonas.NombPersona:= NombPersona;
+          RegReservacionGrupoPersonas.ApellidoPersona:= ApellidoPersona;
+          RegReservacionGrupoPersonas.EdadPersona:= EdadPersona;
+          RegReservacionGrupoPersonas.TlfPersona:= TlfPersona;
+          RegReservacionGrupoPersonas.SexoPersona:= SexoPersona;
+         {escribo formato de registro en el archivo}
+          Write(ReservacionGrupoPersonas_Int,RegReservacionGrupoPersonas);
+         {cierro archivo}
+         Close(ReservacionGrupoPersonas_Int);
+
+    end;
+Procedure GrabarGrupoFamiliar;
+    begin
+         Reset(ReservacionGrupoFamiliar_Int);
+          {Posiciono Puntero al final del Archivo, para agregar registro}
+          seek(ReservacionGrupoFamiliar_Int,filesize(ReservacionGrupoFamiliar_Int));
+          RegReservacionGrupoFamiliar.NacionCliente:= NacionCliente;
+          RegReservacionGrupoFamiliar.CedulaCliente:= CedulaCliente;
+          RegReservacionGrupoFamiliar.DiaReservacion:= DiaReservacion;
+          RegReservacionGrupoFamiliar.MesReservacion:= MesReservacion;
+          RegReservacionGrupoFamiliar.AnoReservacion:= AnoReservacion;
+          RegReservacionGrupoFamiliar.NroReservacion:= NroReservacion;
+          RegReservacionGrupoFamiliar.CanDiasReservacion:= CanDiasReservacion;
+         {escribo formato de registro en el archivo}
+          Write(ReservacionGrupoFamiliar_Int,RegReservacionGrupoFamiliar);
+         {cierro archivo}
+         Close(ReservacionGrupoFamiliar_Int);
+
+         Reset(ReservacionHabitaciones_Int);
+          {Posiciono Puntero al final del Archivo, para agregar registro}
+          seek(ReservacionHabitaciones_Int,filesize(ReservacionHabitaciones_Int));
+          RegReservacionHabitaciones.NacionCliente:= NacionCliente;
+          RegReservacionHabitaciones.CedulaCliente:= CedulaCliente;
+          RegReservacionHabitaciones.NroReservacion:= NroReservacion;
+          RegReservacionHabitaciones.TipoHabitacion:= TipoHabitacion;
+          RegReservacionHabitaciones.CantHabitacion:= CantHabitacion;
+          RegReservacionHabitaciones.PrecioHabitacion:= PrecTipoHabitacion(TipoHabitacion);
+          RegReservacionHabitaciones.TotalPagarHab:= TotalPagarHab;
+         {escribo formato de registro en el archivo}
+          Write(ReservacionHabitaciones_Int,RegReservacionHabitaciones);
+         {cierro archivo}
+         Close(ReservacionHabitaciones_Int);
+    end;
+  Procedure ReservacionIndividual;
+   var
+     dato: string;
+     opc: char;
+     begin
+        opc:=' ';
         randomize;
         NroReservacion:=random(9999999);
         dato:='';
         TituloLidotel;
-        writeln(' Reservacion Individual');
+        writeln(' Reservacion Individual:');
         writeln;
         writeln;
-  {Validar Nacionalidad}
+   {Validar Nacionalidad}
       repeat
       TituloLidotel;
-      writeln(' Reservacion Individual');
+      writeln(' Reservacion Individual:');
       writeln;
-      write(' Nacionalidad (V,E): ');
+      write  (' Nacionalidad (V,E): ');
       NacionCliente:=Upcase(Readkey);
       until (NacionCliente='V') or (NacionCliente='E');
       writeln();
     {Validar Cedula}
       repeat
       TituloLidotel;
-      writeln(' Reservacion Individual');
+      writeln(' Reservacion Individual:');
       writeln;
       writeln(' Nacionalidad (V,E): ', NacionCliente);
       write  (' Cedula............: ');
       readln(dato);
       val(dato,CedulaCliente);
       until (CedulaCliente<>0);
-
      {Validar que la cedula exista para consultar}
       PosCursor:=BuscarCliente(NacionCliente,CedulaCliente);
     If (PosCursor) >= 0 then  {Existe Registro }
      Begin
       TituloLidotel;
-      writeln(' Reservacion Individual');
+      writeln(' Reservacion Individual:');
       CargarDatosCliente;
-      write  (' Nombre............: ', NombCliente);
+        Repeat
+       TituloLidotel;
+       writeln(' Reservacion Individual:');
+       writeln;
+       writeln(' Nacionalidad (V,E): ', NacionCliente);
+       writeln(' Cedula............: ', CedulaCliente);
+       writeln(' Nombre............: ', NombCliente);
+       TipoHabitaciones;
+       write  (' Tipo de Habitacion: ');
+       dato:=Readkey;
+       val(dato,TipoHabitacion); {convertir dato string  a numerico}
+       if  (TipoHabitacion=9) then DescHabitaciones;
+      until (TipoHabitacion>=1) and (DiaReservacion<=4);
       Repeat
-       write (' Dia de Reservacion.: ', DiaReservacion);
+       TituloLidotel;
+       writeln(' Reservacion Individual:');
+       writeln;
+       writeln(' Nacionalidad (V,E): ', NacionCliente);
+       writeln(' Cedula............: ', CedulaCliente);
+       writeln(' Nombre............: ', NombCliente);
+       writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+       writeln(' Numero Reservacion: ', NroReservacion);
+       write  (' Dia de Reservacion: ');
        readln(dato);
        val(dato,DiaReservacion); {convertir dato string  a numerico}
       until (DiaReservacion>=1) and (DiaReservacion<=31);
       Repeat
-        write  (' Mes de Reservacion.: ', MesReservacion);
+        TituloLidotel;
+        writeln(' Reservacion Individual');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        write  (' Mes de Reservacion: ');
         readln(dato);
         val(dato, MesReservacion); {convertir dato string  a numerico}
       until ( MesReservacion>=1) and ( MesReservacion<=12);
       Repeat
-        write  (' Ano de Reservacion: ', AnoReservacion);
+        TituloLidotel;
+        writeln(' Reservacion Individual:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        write  (' Ano de Reservacion: ');
         readln(dato);
         val(dato,AnoReservacion); {convertir dato string  a numerico}
       until (AnoReservacion>1900);
       Repeat
-        write  (' Numero de Reservacion: ', CanDiasReservacion );
+        TituloLidotel;
+        writeln(' Reservacion Individual:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        writeln(' Ano de Reservacion: ', AnoReservacion);
+        write  (' Dias Reservacion..: ');
         readln(dato);
         val(dato,CanDiasReservacion); {convertir dato string  a numerico}
       until (CanDiasReservacion>0);
+      Repeat
+      TituloLidotel;
+        writeln(' Reservacion Individual:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        writeln(' Ano de Reservacion: ', AnoReservacion);
+        writeln(' Dias Reservacion..: ', CanDiasReservacion );
+        writeln;writeln;
+        TotalPagarHab:=CanDiasReservacion*PrecTipoHabitacion(TipoHabitacion);
+        writeln(' Total a Pagar: ', TotalPagarHab:10:2);
+        writeln;
+        write('                       Desea guardar los datos(S=si o N=no): ');
+      opc:=Upcase(readkey);
+      until (opc='S') or (opc='N');
+      if (opc='S') then
+       begin
+           Reset(ReservacionIndividual_Int);
+           {Posiciono Puntero al final del Archivo, para agregar registro}
+           seek(ReservacionIndividual_Int,filesize(ReservacionIndividual_Int));
+           RegReservacionIndividual.NacionCliente:= NacionCliente;
+           RegReservacionIndividual.CedulaCliente:= CedulaCliente;
+           RegReservacionIndividual.DiaReservacion:= DiaReservacion;
+           RegReservacionIndividual.MesReservacion:= MesReservacion;
+           RegReservacionIndividual.AnoReservacion:= AnoReservacion;
+           RegReservacionIndividual.NroReservacion:= NroReservacion;
+           RegReservacionIndividual.CanDiasReservacion:= CanDiasReservacion;
+          {escribo formato de registro en el archivo}
+           Write(ReservacionIndividual_Int,RegReservacionIndividual);
+          {cierro archivo}
+          Close(ReservacionIndividual_Int);
 
-        write  (' Numero de Reservacion: ', NroReservacion);
-
-
-
-      writeln();
-      writeln(' Pulse Una Tecla Para Salir');
-      readkey();
+          Reset(ReservacionHabitaciones_Int);
+           {Posiciono Puntero al final del Archivo, para agregar registro}
+           seek(ReservacionHabitaciones_Int,filesize(ReservacionHabitaciones_Int));
+           RegReservacionHabitaciones.NacionCliente:= NacionCliente;
+           RegReservacionHabitaciones.CedulaCliente:= CedulaCliente;
+           RegReservacionHabitaciones.TipoHabitacion:= TipoHabitacion;
+           RegReservacionHabitaciones.NroReservacion:= NroReservacion;
+           RegReservacionHabitaciones.CantHabitacion:= 1;
+            RegReservacionHabitaciones.PrecioHabitacion:= PrecTipoHabitacion(TipoHabitacion);
+           RegReservacionHabitaciones.TotalPagarHab:= TotalPagarHab;
+          {escribo formato de registro en el archivo}
+           Write(ReservacionHabitaciones_Int,RegReservacionHabitaciones);
+          {cierro archivo}
+          Close(ReservacionHabitaciones_Int);
+          writeln;writeln;
+          write('                       Datos Guardado Satisfactoriamete...');
+          delay(2000);
+       end;
      end
      Else
      Begin
+       Repeat
        writeln;writeln;
-       writeln('                      Cliente no Existe...Pulse una tecla para continuar' );
-       readkey();
+       write(' Cliente No Existe, Desea Crearlo(S=si o N=no): ');
+       opc:=upcase(readkey);
+       until (opc='S') or (opc='N');
+      if (opc='S') then
+       begin
+        IncluirCliente;
      End;
    end;
-
-
+end;
  Procedure ReservacionAcompanante;
-   begin
+   var
+     dato: string;
+     opc: char;
+     begin
+        opc:=' ';
+        randomize;
+        NroReservacion:=random(9999999);
+        dato:='';
+        TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln;
+    {Validar Nacionalidad}
+      repeat
+      TituloLidotel;
+      writeln(' Reservacion Acompanante:');
+      writeln;
+      write  (' Nacionalidad (V,E): ');
+      NacionCliente:=Upcase(Readkey);
+      until (NacionCliente='V') or (NacionCliente='E');
+      writeln();
+    {Validar Cedula}
+      repeat
+      TituloLidotel;
+      writeln(' Reservacion Acompanante:');
+      writeln;
+      writeln(' Nacionalidad (V,E): ', NacionCliente);
+      write  (' Cedula............: ');
+      readln(dato);
+      val(dato,CedulaCliente);
+      until (CedulaCliente<>0);
+     {Validar que la cedula exista para consultar}
+      PosCursor:=BuscarCliente(NacionCliente,CedulaCliente);
+    If (PosCursor) >= 0 then  {Existe Registro }
+     Begin
+      TituloLidotel;
+      writeln(' Reservacion Acompanante:');
+      CargarDatosCliente;
+        Repeat
+       TituloLidotel;
+       writeln(' Reservacion Acompanante:');
+       writeln;
+       writeln(' Nacionalidad (V,E): ', NacionCliente);
+       writeln(' Cedula............: ', CedulaCliente);
+       writeln(' Nombre............: ', NombCliente);
+       TipoHabitaciones;
+       write  (' Tipo de Habitacion: ');
+       dato:=Readkey;
+       val(dato,TipoHabitacion); {convertir dato string  a numerico}
+       if  (TipoHabitacion=9) then DescHabitaciones;
+      until (TipoHabitacion>=1) and (DiaReservacion<=4);
+      Repeat
+       TituloLidotel;
+       writeln(' Reservacion Acompanante:');
+       writeln;
+       writeln(' Nacionalidad (V,E): ', NacionCliente);
+       writeln(' Cedula............: ', CedulaCliente);
+       writeln(' Nombre............: ', NombCliente);
+       writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+       writeln(' Numero Reservacion: ', NroReservacion);
+       write  (' Dia de Reservacion: ');
+       readln(dato);
+       val(dato,DiaReservacion); {convertir dato string  a numerico}
+      until (DiaReservacion>=1) and (DiaReservacion<=31);
+      Repeat
+        TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        write  (' Mes de Reservacion: ');
+        readln(dato);
+        val(dato, MesReservacion); {convertir dato string  a numerico}
+      until ( MesReservacion>=1) and ( MesReservacion<=12);
+      Repeat
+        TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        write  (' Ano de Reservacion: ');
+        readln(dato);
+        val(dato,AnoReservacion); {convertir dato string  a numerico}
+      until (AnoReservacion>1900);
+      Repeat
+        TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        writeln(' Ano de Reservacion: ', AnoReservacion);
+        write  (' Dias Reservacion..: ');
+        readln(dato);
+        val(dato,CanDiasReservacion); {convertir dato string  a numerico}
+      until (CanDiasReservacion>0);
+      Repeat
+      TituloLidotel;
+        writeln(' Reservacion Acompanante:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        writeln(' Ano de Reservacion: ', AnoReservacion);
+        writeln(' Dias Reservacion..: ', CanDiasReservacion );
+        writeln;writeln;
+        GrupoPersona(True,1,False);
+        TotalPagarHab:=CanDiasReservacion*PrecTipoHabitacion(TipoHabitacion);
+        writeln(); writeln();
+        writeln(' Total a Pagar: ', TotalPagarHab:10:2);
+        writeln;
+        write('                       Desea guardar los datos(S=si o N=no): ');
+      opc:=Upcase(readkey);
+      until (opc='S') or (opc='N');
+      if (opc='S') then
+       begin
+           Reset(ReservacionAcompanante_Int);
+           {Posiciono Puntero al final del Archivo, para agregar registro}
+           seek(ReservacionAcompanante_Int,filesize(ReservacionAcompanante_Int));
+           RegReservacionAcompanante.NacionCliente:= NacionCliente;
+           RegReservacionAcompanante.CedulaCliente:= CedulaCliente;
+           RegReservacionAcompanante.DiaReservacion:= DiaReservacion;
+           RegReservacionAcompanante.MesReservacion:= MesReservacion;
+           RegReservacionAcompanante.AnoReservacion:= AnoReservacion;
+           RegReservacionAcompanante.NroReservacion:= NroReservacion;
+           RegReservacionAcompanante.CanDiasReservacion:= CanDiasReservacion;
+          {escribo formato de registro en el archivo}
+           Write(ReservacionAcompanante_Int,RegReservacionAcompanante);
+          {cierro archivo}
+          Close(ReservacionAcompanante_Int);
+
+          Reset(ReservacionHabitaciones_Int);
+           {Posiciono Puntero al final del Archivo, para agregar registro}
+           seek(ReservacionHabitaciones_Int,filesize(ReservacionHabitaciones_Int));
+           RegReservacionHabitaciones.NacionCliente:= NacionCliente;
+           RegReservacionHabitaciones.CedulaCliente:= CedulaCliente;
+           RegReservacionHabitaciones.NroReservacion:= NroReservacion;
+           RegReservacionHabitaciones.TipoHabitacion:= TipoHabitacion;
+           RegReservacionHabitaciones.CantHabitacion:= 1;
+           RegReservacionHabitaciones.PrecioHabitacion:= PrecTipoHabitacion(TipoHabitacion);
+           RegReservacionHabitaciones.TotalPagarHab:= TotalPagarHab;
+          {escribo formato de registro en el archivo}
+           Write(ReservacionHabitaciones_Int,RegReservacionHabitaciones);
+          {cierro archivo}
+          Close(ReservacionHabitaciones_Int);
+
+          Reset(ReservacionGrupoPersonas_Int);
+           {Posiciono Puntero al final del Archivo, para agregar registro}
+           seek(ReservacionGrupoPersonas_Int,filesize(ReservacionGrupoPersonas_Int));
+           RegReservacionGrupoPersonas.NacionCliente:= NacionCliente;
+           RegReservacionGrupoPersonas.CedulaCliente:= CedulaCliente;
+           RegReservacionGrupoPersonas.NroReservacion:= NroReservacion;
+           RegReservacionGrupoPersonas.TipoVinculo:= TipoVinculo;
+           RegReservacionGrupoPersonas.NacionPersona:= NacionPersona;
+           RegReservacionGrupoPersonas.CedulaPersona:= CedulaPersona;
+           RegReservacionGrupoPersonas.NombPersona:= NombPersona;
+           RegReservacionGrupoPersonas.ApellidoPersona:= ApellidoPersona;
+           RegReservacionGrupoPersonas.EdadPersona:= EdadPersona;
+           RegReservacionGrupoPersonas.TlfPersona:= TlfPersona;
+           RegReservacionGrupoPersonas.SexoPersona:= SexoPersona;
+          {escribo formato de registro en el archivo}
+           Write(ReservacionGrupoPersonas_Int,RegReservacionGrupoPersonas);
+          {cierro archivo}
+          Close(ReservacionGrupoPersonas_Int);
+          writeln;writeln;
+          write('                       Datos Guardado Satisfactoriamete...');
+          delay(2000);
+       end;
+     end
+     Else
+     Begin
+       Repeat
+       writeln;writeln;
+       write(' Cliente No Existe, Desea Crearlo(S=si o N=no): ');
+       opc:=upcase(readkey);
+       until (opc='S') or (opc='N');
+      if (opc='S') then
+       begin
+        IncluirCliente;
+     End;
    end;
+end;
  Procedure ReservacionGrupoFamiliar;
-   begin
+   var
+     dato: string;
+     opc: char;
+     x: integer;
+     begin
+        x:=0;
+        opc:=' ';
+        randomize;
+        NroReservacion:=random(9999999);
+        dato:='';
+        TituloLidotel;
+        writeln(' Reservacion Grupo/Familiar:');
+        writeln;
+        writeln;
+    {Validar Nacionalidad}
+      repeat
+      TituloLidotel;
+      writeln(' Reservacion  Grupo/Familiar:');
+      writeln;
+      write  (' Nacionalidad (V,E): ');
+      NacionCliente:=Upcase(Readkey);
+      until (NacionCliente='V') or (NacionCliente='E');
+      writeln();
+    {Validar Cedula}
+      repeat
+      TituloLidotel;
+      writeln(' Reservacion  Grupo/Familiar:');
+      writeln;
+      writeln(' Nacionalidad (V,E): ', NacionCliente);
+      write  (' Cedula............: ');
+      readln(dato);
+      val(dato,CedulaCliente);
+      until (CedulaCliente<>0);
+     {Validar que la cedula exista para consultar}
+      PosCursor:=BuscarCliente(NacionCliente,CedulaCliente);
+    If (PosCursor) >= 0 then  {Existe Registro }
+     Begin
+      TituloLidotel;
+      writeln(' Reservacion  Grupo/Familiar:');
+      CargarDatosCliente;
+        Repeat
+       TituloLidotel;
+       writeln(' Reservacion  Grupo/Familiar:');
+       writeln;
+       writeln(' Nacionalidad (V,E): ', NacionCliente);
+       writeln(' Cedula............: ', CedulaCliente);
+       writeln(' Nombre............: ', NombCliente);
+       TipoHabitaciones;
+       write  (' Tipo de Habitacion: ');
+       dato:=Readkey;
+       val(dato,TipoHabitacion); {convertir dato string  a numerico}
+       if  (TipoHabitacion=9) then DescHabitaciones;
+      until (TipoHabitacion>=1) and (DiaReservacion<=4);
+        Repeat
+       TituloLidotel;
+       writeln(' Reservacion  Grupo/Familiar:');
+       writeln;
+       writeln(' Nacionalidad (V,E): ', NacionCliente);
+       writeln(' Cedula............: ', CedulaCliente);
+       writeln(' Nombre............: ', NombCliente);
+       writeln(' Numero Reservacion: ', NroReservacion);
+       writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+       write  (' Cant.  Habitacion.: ');
+       readln(dato);
+       val(dato,CantHabitacion); {convertir dato string  a numerico}
+      until (CantHabitacion>=0) ;
+      Repeat
+       TituloLidotel;
+       writeln(' Reservacion  Grupo/Familiar:');
+       writeln;
+       writeln(' Nacionalidad (V,E): ', NacionCliente);
+       writeln(' Cedula............: ', CedulaCliente);
+       writeln(' Nombre............: ', NombCliente);
+       writeln(' Numero Reservacion: ', NroReservacion);
+       writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+       writeln(' Cant.  Habitacion.: ',CantHabitacion);
+       write  (' Dia de Reservacion: ');
+       readln(dato);
+       val(dato,DiaReservacion); {convertir dato string  a numerico}
+      until (DiaReservacion>=1) and (DiaReservacion<=31);
+      Repeat
+        TituloLidotel;
+        writeln(' Reservacion  Grupo/Familiar:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Cant.  Habitacion.: ',CantHabitacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        write  (' Mes de Reservacion: ');
+        readln(dato);
+        val(dato, MesReservacion); {convertir dato string  a numerico}
+      until ( MesReservacion>=1) and ( MesReservacion<=12);
+      Repeat
+        TituloLidotel;
+        writeln(' Reservacion  Grupo/Familiar:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Cant.  Habitacion.: ',CantHabitacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        write  (' Ano de Reservacion: ');
+        readln(dato);
+        val(dato,AnoReservacion); {convertir dato string  a numerico}
+      until (AnoReservacion>1900);
+      Repeat
+        TituloLidotel;
+        writeln(' Reservacion  Grupo/Familiar:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Cant.  Habitacion.: ',CantHabitacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        writeln(' Ano de Reservacion: ', AnoReservacion);
+        write  (' Dias Reservacion..: ');
+        readln(dato);
+        val(dato,CanDiasReservacion); {convertir dato string  a numerico}
+      until (CanDiasReservacion>0);
+        Repeat
+        TituloLidotel;
+        writeln(' Reservacion  Grupo/Familiar:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Cant.  Habitacion.: ',CantHabitacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        writeln(' Ano de Reservacion: ', AnoReservacion);
+        writeln(' Dias Reservacion..: ', CanDiasReservacion);
+        write  (' Cantidad de Hijos.: ');
+        readln(dato);
+        val(dato,NroHijos); {convertir dato string  a numerico}
+      until (NroHijos>=0);
+      if (NroHijos>0) then
+        begin
+         for x:= 1 to NroHijos do
+           begin
+            GrupoPersona(False,x,True);
+            Repeat
+            TotalPagarHab:=CanDiasReservacion*PrecTipoHabitacion(TipoHabitacion);
+            writeln(); writeln();
+            writeln(' Total a Pagar: ', TotalPagarHab:10:2);
+            writeln;
+            write('                       Desea guardar los datos(S=si o N=no): ');
+            opc:=Upcase(readkey);
+          until (opc='S') or (opc='N');
+          if (opc='S') then
+           begin
+            GrabarGrupoPersonas;
+            writeln;writeln;
+            write('                       Datos Guardado Satisfactoriamete...');
+            delay(2000);
+           end;
+          end;
+
+       Repeat
+        TituloLidotel;
+        writeln(' Reservacion  Grupo/Familiar:');
+        writeln;
+        writeln(' Nacionalidad (V,E): ', NacionCliente);
+        writeln(' Cedula............: ', CedulaCliente);
+        writeln(' Nombre............: ', NombCliente);
+        writeln(' Numero Reservacion: ', NroReservacion);
+        writeln(' Tipo de Habitacion: ', DescTipoHabitacion(TipoHabitacion));
+        writeln(' Cant.  Habitacion.: ',CantHabitacion);
+        writeln(' Dia de Reservacion: ', DiaReservacion);
+        writeln(' Mes de Reservacion: ', MesReservacion );
+        writeln(' Ano de Reservacion: ', AnoReservacion);
+        writeln(' Dias Reservacion..: ', CanDiasReservacion);
+        writeln(' Cantidad de Hijos.: ',NroHijos);
+        write  (' Cantidad de Adulto: ');
+        readln(dato);
+        val(dato,NroAdultos); {convertir dato string  a numerico}
+       until (NroAdultos>=0);
+      end;
+
+      if (NroAdultos>0) then
+       begin
+         for x:= 1 to NroAdultos do
+           begin
+            GrupoPersona(True,x,True);
+            Repeat
+            TotalPagarHab:=CanDiasReservacion*(CantHabitacion*PrecTipoHabitacion(TipoHabitacion));
+            writeln(); writeln();
+            writeln(' Total a Pagar: ', TotalPagarHab:12:2);
+            writeln;
+            write('                       Desea guardar los datos(S=si o N=no): ');
+            opc:=Upcase(readkey);
+          until (opc='S') or (opc='N');
+          if (opc='S') then
+           begin
+            GrabarGrupoPersonas;
+            writeln;
+            writeln;writeln;
+            write('                       Datos Guardado Satisfactoriamete...');
+            delay(2000);
+           end;
+          end;
+       end;
+        GrabarGrupoFamiliar;
+     end
+     Else
+     Begin
+       Repeat
+       writeln;writeln;
+       write(' Cliente No Existe, Desea Crearlo(S=si o N=no): ');
+       opc:=upcase(readkey);
+       until (opc='S') or (opc='N');
+      if (opc='S') then
+       begin
+        IncluirCliente;
+       End;
+     end;
+
+end;
+Procedure VerReservacionIndividual;
+Var
+Ced,Nro,Dia,Mes,Ano: String;
+
+
+Begin
+ TituloLidotel;
+
+ Writeln('Consulta de Reservaciones Individual');
+
+ Writeln();
+ Writeln('____________________________________________________________________________________________________________');
+ {Recuperar datos del cliente}
+ PosCursor:=BuscarCliente(RegReservacionIndividual.NacionCliente,RegReservacionIndividual.CedulaCliente);
+ Str(RegReservacionIndividual.CedulaCliente,Ced);
+ Str(RegReservacionIndividual.NroReservacion,Nro);
+ Str(RegReservacionIndividual.DiaReservacion,Dia);
+ Str(RegReservacionIndividual.MesReservacion,Mes);
+ Str(RegReservacionIndividual.AnoReservacion,Ano);
+
+
+
+ Textcolor(white); write(' Cliente...: '); Textcolor(black); write(RegReservacionIndividual.NacionCliente +'-'+Ced+' '+RegClienteLidotel.NombCliente) ;
+ Textcolor(white); write('  Nro Reservacion: '); Textcolor(black); write(Nro);  Textcolor(white);write('  Fecha Reservacion: ') ; Textcolor(black); writeln(Dia+'/'+Mes+'/'+Ano);
+
+ Textcolor(white); write(' Habitacion.: '); Textcolor(black); write(DescTipoHabitacion(RegReservacionHabitaciones.TipoHabitacion));
+ Textcolor(white); write('  Cantidad: '); Textcolor(black);write(RegReservacionHabitaciones.CantHabitacion);
+ Textcolor(white);   write('  Dias Reservacion: '); Textcolor(black);write(RegReservacionIndividual.CanDiasReservacion);
+ Textcolor(white); write('  Precio: '); Textcolor(black);write(RegReservacionHabitaciones.PrecioHabitacion:12:2); Textcolor(white);   write('  Total a Pagar: '); Textcolor(black);writeln(RegReservacionHabitaciones.TotalPagarHab:12:2);
+
+end;
+procedure ConsultaIndividual;
+Var
+CanReg,RegAct:string ;
+Opc : Char;
+Begin
+
+{Asigno el Archivo a Leer}
+Assign(ReservacionIndividual_Int,ReservacionIndividual_Ext);
+Assign(ReservacionHabitaciones_Int,ReservacionHabitaciones_Ext);
+{Abrir el Archivo }
+Reset(ReservacionIndividual_Int);
+Reset(ReservacionHabitaciones_Int);
+CanRegReservacionIndividual:=Filesize(ReservacionIndividual_Int);
+
+ opc:=' ';
+ If  CanRegReservacionIndividual > 0 then
+  Begin
+   PosRegReservacionIndividual:=0; {posicion primer registro del archivo}
+   While Opc <> 'S' do
+    Begin
+    Str(CanRegReservacionIndividual,CanReg);
+    Str(PosRegReservacionIndividual+1,RegAct);
+    seek(ReservacionIndividual_Int,PosRegReservacionIndividual);
+    Read(ReservacionIndividual_Int,RegReservacionIndividual);
+    {Final del archivo, lo controlo por el total del registro leido, para mostrar el ultimo tambien, el eof me rompia la condicion}
+    If (PosRegReservacionIndividual<=CanRegReservacionIndividual-1) Then
+     Begin
+     {Posisionar Archivo de ReservacionHabitaciones, para lectura de registros de habitaciones de la reservacion actual }
+     seek(ReservacionHabitaciones_Int,0);
+     while (eof(ReservacionHabitaciones_Int)=False)
+     do begin
+      Read(ReservacionHabitaciones_Int,RegReservacionHabitaciones);
+      If (RegReservacionIndividual.NacionCliente=RegReservacionHabitaciones.NacionCliente  ) and
+         (RegReservacionIndividual.CedulaCliente=RegReservacionHabitaciones.CedulaCliente  ) and
+         (RegReservacionIndividual.NroReservacion=RegReservacionHabitaciones.NroReservacion)  then
+          Begin
+           VerReservacionIndividual;
+           end;
+      end;
+     end
+     Else
+     Begin
+       Write('Final del Archivo...');
+       Delay(2000);
+     end;
+    {Seleccion del usuario para avanzar/Retroceder}
+   Repeat
+   writeln;
+     Textcolor(white);
+    Writeln(' REGISTRO: ' + RegAct+'/'+CanReg);
+     Textcolor(Black);
+    Writeln('____________________________________________________________________________________________________________');
+    writeln;
+    Write('    Seleccione Opcion (P=Proximo,A-Anterior,S=Salir): ');
+    Opc:=Upcase(Readkey);
+   until (opc='P') or (opc='A') or (opc='S');
+   If (opc='P') And (CanRegReservacionIndividual-1<>PosRegReservacionIndividual) then PosRegReservacionIndividual:=PosRegReservacionIndividual+1;
+   If (opc='A') And (PosRegReservacionIndividual<>0) then PosRegReservacionIndividual:=PosRegReservacionIndividual-1;
+
    end;
+
+
+   end
+         Else
+     Begin
+       Write('No Existe Registros de Reservacion Disponible..') ;
+       Delay(2000);
+       Opc:='S';  {forzo salida del ciclo while}
+     end;
+
+
+
+{cierro archivo}
+Close(ReservacionIndividual_Int);
+Close(ReservacionHabitaciones_Int);
+
+end;
+{***}
+Procedure VerReservacionGrupoPersonasCli(TipoReservacion: String);
+Begin
+ TituloLidotel;
+ Writeln('Consulta de Reservaciones ' +TipoReservacion);
+ Writeln();
+
+ Writeln('____________________________________________________________________________________________________________');
+
+ end;
+
+Procedure VerReservacionGrupoPersonasHab;
+Var
+Ced,Nro,Dia,Mes,Ano,CedPer,CanDias: String;
+
+Begin
+ {Recuperar datos del cliente}
+ PosCursor:=BuscarCliente(RegReservacionIndividual.NacionCliente,RegReservacionIndividual.CedulaCliente);
+ Str(RegClienteLidotel.CedulaCliente,Ced);
+ Str(NroReservacion,Nro);
+ Str(DiaReservacion,Dia);
+ Str(MesReservacion,Mes);
+ Str(AnoReservacion,Ano);
+ Str(RegReservacionGrupoPersonas.CedulaPersona,CedPer);
+ Str(CanDiasReservacion,CanDias);
+
+
+  Textcolor(white); write(' Cliente...: '); Textcolor(black); write(RegClienteLidotel.NacionCliente +'-'+Ced+' '+RegClienteLidotel.NombCliente) ;
+ Textcolor(white); write('  Nro Reservacion: '); Textcolor(black); write(Nro);  Textcolor(white);write('  Fecha Reservacion: ') ; Textcolor(black); writeln(Dia+'/'+Mes+'/'+Ano);
+ Textcolor(white); write(' Habitacion.: '); Textcolor(black); write(DescTipoHabitacion(RegReservacionHabitaciones.TipoHabitacion));
+ Textcolor(white); write('  Cantidad: '); Textcolor(black);write(RegReservacionHabitaciones.CantHabitacion);
+ Textcolor(white);   write('  Dias Reservacion: '); Textcolor(black);write(CanDias);
+ Textcolor(white);write('  Precio: '); Textcolor(black);write(RegReservacionHabitaciones.PrecioHabitacion:12:2);
+ Textcolor(white);   write('  Total a Pagar: '); Textcolor(black);writeln(RegReservacionHabitaciones.TotalPagarHab:12:2);
+ writeln()
+end;
+Procedure VerReservacionGrupoPersonasPer;
+Var
+Ced,Nro,Dia,Mes,Ano,CedPer: String;
+
+Begin
+
+ {Recuperar datos del cliente}
+ PosCursor:=BuscarCliente(RegReservacionIndividual.NacionCliente,RegReservacionIndividual.CedulaCliente);
+ Str(RegClienteLidotel.CedulaCliente,Ced);
+ Str(NroReservacion,Nro);
+ Str(DiaReservacion,Dia);
+ Str(MesReservacion,Mes);
+ Str(AnoReservacion,Ano);
+ Str(RegReservacionGrupoPersonas.CedulaPersona,CedPer);
+
+ Textcolor(white); write(' Vinculo.....: '); Textcolor(black);write(DescTipoVinculo(RegReservacionGrupoPersonas.TipoVinculo));
+ Textcolor(white); write(' Cedula: '); Textcolor(black); write(RegReservacionGrupoPersonas.NacionPersona +'-'+CedPer+' '+RegReservacionGrupoPersonas.NombPersona) ;
+ Textcolor(white); write(' Sexo: '); Textcolor(black); writeln(RegReservacionGrupoPersonas.SexoPersona);
+end;
+procedure ConsultaAcompanante;
+Var
+Opc: char;
+Begin
+{Asigno el Archivo a Leer}
+Assign(ReservacionAcompanante_Int,ReservacionAcompanante_Ext);
+Assign(ReservacionHabitaciones_Int,ReservacionHabitaciones_Ext);
+Assign(ReservacionGrupoPersonas_Int,ReservacionGrupoPersonas_Ext);
+{Abrir el Archivo }
+Reset(ReservacionAcompanante_Int);
+Reset(ReservacionHabitaciones_Int);
+Reset(ReservacionGrupoPersonas_Int);
+CanRegReservacionAcompanante:=Filesize(ReservacionAcompanante_Int);
+Opc:=' ';
+ If  CanRegReservacionAcompanante > 0 then
+  Begin
+   PosRegReservacionAcompanante:=0; {posicion primer registro del archivo}
+   While Opc <> 'S' do
+    Begin
+
+    seek(ReservacionAcompanante_Int,PosRegReservacionAcompanante);
+    Read(ReservacionAcompanante_Int,RegReservacionAcompanante);
+    {Final del archivo, lo controlo por el total del registro leido, para mostrar el ultimo tambien, el eof me rompia la condicion}
+    If (PosRegReservacionAcompanante<=CanRegReservacionAcompanante-1) Then
+     Begin
+     VerReservacionGrupoPersonasCli('Acompanante');
+     {Posisionar Archivo de ReservacionHabitaciones, para lectura de registros de habitaciones de la reservacion actual }
+     seek(ReservacionHabitaciones_Int,0);
+     while (eof(ReservacionHabitaciones_Int)=False)
+     do begin
+      Read(ReservacionHabitaciones_Int,RegReservacionHabitaciones);
+      If (RegReservacionAcompanante.NacionCliente=RegReservacionHabitaciones.NacionCliente  ) and
+         (RegReservacionAcompanante.CedulaCliente=RegReservacionHabitaciones.CedulaCliente  ) and
+         (RegReservacionAcompanante.NroReservacion=RegReservacionHabitaciones.NroReservacion)  then
+          Begin
+          NroReservacion:=RegReservacionAcompanante.NroReservacion;
+          DiaReservacion:=RegReservacionAcompanante.DiaReservacion;
+          MesReservacion:=RegReservacionAcompanante.MesReservacion;
+          AnoReservacion:=RegReservacionAcompanante.AnoReservacion;
+          CanDiasReservacion:=RegReservacionAcompanante.CanDiasReservacion;
+          VerReservacionGrupoPersonasHab;
+          {cargar datos del Acompante}
+             {Posisionar Archivo de ReservacionGrupoPersonas, para lectura de registros de habitaciones de la reservacion actual }
+              seek(ReservacionGrupoPersonas_Int,0);
+              while (eof(ReservacionGrupoPersonas_Int)=False)
+              do begin
+              Read(ReservacionGrupoPersonas_Int,RegReservacionGrupoPersonas);
+              If (RegReservacionAcompanante.NacionCliente=RegReservacionGrupoPersonas.NacionCliente  ) and
+                 (RegReservacionAcompanante.CedulaCliente=RegReservacionGrupoPersonas.CedulaCliente  ) and
+                 (RegReservacionAcompanante.NroReservacion=RegReservacionGrupoPersonas.NroReservacion)  then
+               Begin
+                    Str(CanRegReservacionAcompanante,CanReg);
+                    Str(PosRegReservacionAcompanante+1,RegAct);
+
+                   VerReservacionGrupoPersonasPer;
+                end;
+              end;
+           end;
+      end;
+     end
+     Else
+     Begin
+       Write('Final del Archivo...');
+       Delay(2000);
+     end;
+    {Seleccion del usuario para avanzar/Retroceder}
+    Writeln();
+    Textcolor(white);
+    Writeln(' REGISTRO: ' + RegAct+'/'+CanReg);
+    Textcolor(Black);
+   Repeat
+    Writeln('____________________________________________________________________________________________________________');
+    writeln;
+    Write('    Seleccione Opcion (P=Proximo,A-Anterior,S=Salir): ');
+    Opc:=Upcase(Readkey);
+   until (opc='P') or (opc='A') or (opc='S');
+   If (opc='P') And (CanRegReservacionAcompanante-1<>PosRegReservacionAcompanante) then PosRegReservacionAcompanante:=PosRegReservacionAcompanante+1;
+   If (opc='A') And (PosRegReservacionAcompanante<>0) then PosRegReservacionAcompanante:=PosRegReservacionAcompanante-1;
+
+   end;
+
+
+   end
+         Else
+     Begin
+       Write('No Existe Registros de Reservacion Disponible..') ;
+       Delay(2000);
+       Opc:='S';  {forzo salida del ciclo while}
+     end;
+
+
+
+{cierro archivo}
+Close(ReservacionAcompanante_Int);
+Close(ReservacionHabitaciones_Int);
+Close(ReservacionGrupoPersonas_Int);
+
+end;
+
+
+
+{***}
+procedure ConsultaGrupoFamilia;
+Var
+ Opc: char;
+Begin
+{Asigno el Archivo a Leer}
+Assign(ReservacionGrupoFamiliar_Int,ReservacionGrupoFamiliar_Ext);
+Assign(ReservacionHabitaciones_Int,ReservacionHabitaciones_Ext);
+Assign(ReservacionGrupoPersonas_Int,ReservacionGrupoPersonas_Ext);
+{Abrir el Archivo }
+Reset(ReservacionGrupoFamiliar_Int);
+Reset(ReservacionHabitaciones_Int);
+Reset(ReservacionGrupoPersonas_Int);
+CanRegReservacionGrupoFamiliar:=Filesize(ReservacionGrupoFamiliar_Int);
+Opc:=' ';
+ If  CanRegReservacionGrupoFamiliar > 0 then
+  Begin
+   VerReservacionGrupoPersonasCli('Acompanante');
+   PosRegReservacionGrupoFamiliar:=0; {posicion primer registro del archivo}
+   While Opc <> 'S' do
+    Begin
+
+    seek(ReservacionGrupoFamiliar_Int,PosRegReservacionGrupoFamiliar);
+    Read(ReservacionGrupoFamiliar_Int,RegReservacionGrupoFamiliar);
+    {Final del archivo, lo controlo por el total del registro leido, para mostrar el ultimo tambien, el eof me rompia la condicion}
+    If (PosRegReservacionGrupoFamiliar<=CanRegReservacionGrupoFamiliar-1) Then
+     Begin
+      VerReservacionGrupoPersonasCli('Acompanante');
+
+     {Posisionar Archivo de ReservacionHabitaciones, para lectura de registros de habitaciones de la reservacion actual }
+     seek(ReservacionHabitaciones_Int,0);
+     while (eof(ReservacionHabitaciones_Int)=False)
+
+     do begin
+      Read(ReservacionHabitaciones_Int,RegReservacionHabitaciones);
+      If (RegReservacionGrupoFamiliar.NacionCliente=RegReservacionHabitaciones.NacionCliente  ) and
+         (RegReservacionGrupoFamiliar.CedulaCliente=RegReservacionHabitaciones.CedulaCliente  ) and
+         (RegReservacionGrupoFamiliar.NroReservacion=RegReservacionHabitaciones.NroReservacion)  then
+          Begin
+          NroReservacion:=RegReservacionGrupoFamiliar.NroReservacion;
+          DiaReservacion:=RegReservacionGrupoFamiliar.DiaReservacion;
+          MesReservacion:=RegReservacionGrupoFamiliar.MesReservacion;
+          AnoReservacion:=RegReservacionGrupoFamiliar.AnoReservacion;
+          CanDiasReservacion:=RegReservacionGrupoFamiliar.CanDiasReservacion;
+            VerReservacionGrupoPersonasHab;
+          end;
+      end;
+ 
+          {cargar datos del Acompante}
+             {Posisionar Archivo de ReservacionGrupoPersonas, para lectura de registros de habitaciones de la reservacion actual }
+              seek(ReservacionGrupoPersonas_Int,0);
+              while (eof(ReservacionGrupoPersonas_Int)=False)
+              do begin
+              Read(ReservacionGrupoPersonas_Int,RegReservacionGrupoPersonas);
+              If (RegReservacionGrupoFamiliar.NacionCliente=RegReservacionGrupoPersonas.NacionCliente  ) and
+                 (RegReservacionGrupoFamiliar.CedulaCliente=RegReservacionGrupoPersonas.CedulaCliente  ) and
+                 (RegReservacionGrupoFamiliar.NroReservacion=RegReservacionGrupoPersonas.NroReservacion)  then
+               Begin
+                    Str(CanRegReservacionGrupoFamiliar,CanReg);
+                    Str(PosRegReservacionGrupoFamiliar+1,RegAct);
+                    NroReservacion:=RegReservacionGrupoFamiliar.NroReservacion;
+                    DiaReservacion:=RegReservacionGrupoFamiliar.DiaReservacion;
+                    MesReservacion:=RegReservacionGrupoFamiliar.MesReservacion;
+                    AnoReservacion:=RegReservacionGrupoFamiliar.AnoReservacion;
+                    VerReservacionGrupoPersonasPer;
+                end;
+              end;
+
+
+     end
+     Else
+     Begin
+       Write('Final del Archivo...');
+       Delay(2000);
+     end;
+    Writeln();
+    Textcolor(white);
+     Writeln(' REGISTRO: ' + RegAct+'/'+CanReg);
+    Textcolor(Black);
+    {Seleccion del usuario para avanzar/Retroceder}
+   Repeat
+    Writeln('____________________________________________________________________________________________________________');
+    writeln;
+    Write('    Seleccione Opcion (P=Proximo,A-Anterior,S=Salir): ');
+    Opc:=Upcase(Readkey);
+   until (opc='P') or (opc='A') or (opc='S');
+   If (opc='P') And (CanRegReservacionGrupoFamiliar-1<>PosRegReservacionGrupoFamiliar) then PosRegReservacionGrupoFamiliar:=PosRegReservacionGrupoFamiliar+1;
+   If (opc='A') And (PosRegReservacionGrupoFamiliar<>0) then PosRegReservacionGrupoFamiliar:=PosRegReservacionGrupoFamiliar-1;
+
+   end;
+
+
+   end
+         Else
+     Begin
+       Write('No Existe Registros de Reservacion Disponible..') ;
+       Delay(2000);
+       Opc:='S';  {forzo salida del ciclo while}
+     end;
+
+
+
+{cierro archivo}
+Close(ReservacionGrupoFamiliar_Int);
+Close(ReservacionHabitaciones_Int);
+Close(ReservacionGrupoPersonas_Int);
+
+end;
+
+
+{***}
+
+
 
 Procedure Reservacion;
   var
@@ -1179,14 +2362,14 @@ Procedure Reservacion;
       while opc2<>'9' do
         begin
          TituloLidotel;
-         Writeln(' MENU PRINCIPAL');
+         Writeln(' MENU PRINCIPAL:');
          writeln();
          repeat
          writeln(' *************************************');
          writeln(' *                                   *');
          writeln(' *   1: Reservacion Individual       *');
          writeln(' *   2: Reservacion Acompanante      *');
-         writeln(' *   3: Reservacion Grupo Familiar   *');
+         writeln(' *   3: Reservacion Grupo/Familiar   *');
          writeln(' *   9: Salir                        *');
          writeln(' *                                   *');
          writeln(' *************************************');
@@ -1222,7 +2405,7 @@ Procedure MenuCliente;
       begin
          repeat
          TituloLidotel;
-         Writeln(' MENU DE CLIENTE');
+         Writeln(' MENU DE CLIENTE:');
          writeln();
          writeln(' ****************************');
          writeln(' *                          *');
@@ -1233,6 +2416,7 @@ Procedure MenuCliente;
          writeln(' *  9: Salir                *');
          writeln(' *                          *');
          writeln(' ****************************');
+         writeln();
          write(' Seleccione Opcion: ');
          opc:=Readkey;
          clrscr();
@@ -1250,7 +2434,49 @@ Procedure MenuCliente;
            end;
        end;
    end;
-
+Procedure MenuVerReservacion;
+  var
+    opc:char;
+       begin
+         opc:=' ';
+         writeln();
+         writeln('-----------------------------------------------------------------------------------------------------------------------');
+         writeln('*                                                                                                                     *');
+         writeln('*                              B I E N V E N I D O S    A L    H O T E L    L I D O T E L                             *');
+         writeln('*                                                                                                                     *');
+         writeln('-----------------------------------------------------------------------------------------------------------------------');
+         writeln();
+    while opc<>'9' do
+      begin
+         repeat
+         TituloLidotel;
+         Writeln(' MENU VER RESERVACION:');
+         writeln();
+         writeln(' *******************************************');
+         writeln(' *                                         *');
+         writeln(' *  1: Consultar Reservacion Individual    *');
+         writeln(' *  2: Consultar Reservacion Acompanante   *');
+         writeln(' *  3: Consultar Reservacion Grupo/Familia *');
+         writeln(' *  9: Salir                               *');
+         writeln(' *                                         *');
+         writeln(' *******************************************');
+         writeln();
+         write(' Seleccione Opcion: ');
+         opc:=Readkey;
+         clrscr();
+         until  Opc In['1','2','3','9'];
+         writeln();
+           case opc of
+              '1': ConsultaIndividual;
+              '2': ConsultaAcompanante;
+              '3': ConsultaGrupoFamilia;
+              '9': Begin
+                     TituloLidotel;
+                     Writeln('Gracias por Usar el Sistema de Reservacion del Hotel LIDOTEL');
+                   end;
+           end;
+       end;
+   end;
 Procedure MenuPrincipal;
   var
     opc:char;
@@ -1260,7 +2486,7 @@ Procedure MenuPrincipal;
    while opc<>'9' do
      begin
          TituloLidotel;
-         Writeln(' MENU PRINCIPAL');
+         Writeln(' MENU PRINCIPAL:');
          writeln();
          repeat
          writeln(' ***************************');
@@ -1280,7 +2506,7 @@ Procedure MenuPrincipal;
            case opc of
               '1': MenuCliente;
               '2': Reservacion;
-              '3': writeln(' Ver Reservacion');
+              '3': MenuVerReservacion;
               '9': Begin
                      TituloLidotel;
                      Writeln('Gracias por Usar el Sistema de Reservacion del Hotel LIDOTEL');
@@ -1296,4 +2522,3 @@ begin
    MenuPrincipal;
    Readkey();
 end.
-
